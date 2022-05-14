@@ -1,0 +1,191 @@
+yash@yash:~$ java -version
+
+yash@yash:~$ sudo addgroup hadoop
+yash@yash:~$ sudo adduser --ingroup hadoop hduser
+
+/*
+Changing the user information for hduser
+Enter the new value, or press ENTER for the default
+	Full Name []: 
+	Room Number []: 
+	Work Phone []: 
+	Home Phone []: 
+	Other []: 
+Is the information correct? [Y/n] Y
+
+*/
+
+yash@yash:~$ sudo adduser hduser sudo
+yash@yash:~$ sudo apt-get install openssh-server
+yash@yash:~$ which ssh
+yash@yash:~$ which sshd
+
+yash@yash:~$ su hduser
+
+hduser@yash:/home/yash$ cd
+
+hduser@yash:~$ ssh-keygen -t rsa -P ""
+
+hduser@yash:~$ cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
+hduser@yash:~$ ssh localhost
+
+hduser@yash:~$ exit
+
+hduser@yash:/home$ cd /home/yash/Downloads
+hduser@yash:/home/yash/Downloads$ ls
+
+hduser@yash:/home/yash/Downloads$ sudo mv hadoop-2.10.1 /usr/local/hadoop
+hduser@yash:/home/yash/Downloads$ sudo chown -R hduser /usr/local/
+
+
+hduser@yash:/home/yash/Downloads$ update-alternatives --config java  
+//The above command is used to check the path of java
+
+hduser@yash:/home/yash/Downloads$ sudo nano ~/.bashrc
+/*
+Now we can append the following to the end of ~/.bashrc:
+
+
+#HADOOP VARIABLES START
+export JAVA_HOME=<path>
+export HADOOP_INSTALL=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_INSTALL/bin
+export PATH=$PATH:$HADOOP_INSTALL/sbin
+export HADOOP_MAPRED_HOME=$HADOOP_INSTALL
+export HADOOP_COMMON_HOME=$HADOOP_INSTALL
+export HADOOP_HDFS_HOME=$HADOOP_INSTALL
+export YARN_HOME=$HADOOP_INSTALL
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_INSTALL/lib/native
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_INSTALL/lib"
+#HADOOP VARIABLES END
+hduser@laptop:~$ source ~/.bashrc
+
+
+
+//Note that the JAVA_HOME should be set as the path just before the '.../bin/':
+
+hduser@ubuntu-VirtualBox:~$ javac -version
+javac 1.8.0_111
+hduser@ubuntu-VirtualBox:~$ which javac
+/usr/bin/javac
+hduser@ubuntu-VirtualBox:~$ readlink -f /usr/bin/javac
+<your java path>
+/usr/local/hadoop/etc/hadoop/hadoop-env.sh
+
+
+
+//We need to set JAVA_HOME by modifying hadoop-env.sh file.
+
+hduser@yash:~$ sudo nano /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+//In the file that gets opened add the below line
+export JAVA_HOME=<your java path>
+
+
+
+hduser@yash:~$ sudo mkdir -p /app/hadoop/tmp
+hduser@yash:~$ sudo chown hduser:hadoop /app/hadoop/tmp
+hduser@yash:~$ sudo nano /usr/local/hadoop/etc/hadoop/core-site.xml
+// In the configuration tag add the below code:
+=======================================================================
+<configuration>
+<property>
+<name>hadoop.tmp.dir</name>
+<value>/app/hadoop/tmp</value>
+<description>A base for other temporary directories.</description>
+</property>
+<property>
+<name>fs.default.name</name>
+<value>hdfs://localhost:54310</value>
+<description>The name of the default file system. A URI whose
+scheme and authority determine the FileSystem implementation. The
+uri's scheme determines the config property (fs.SCHEME.impl) naming
+
+the FileSystem implementation class. The uri's authority is used to
+determine the host, port, etc. for a filesystem.</description>
+</property>
+</configuration>
+============================================================================
+
+
+
+
+duser@yash:/usr/local/hadoop/etc/hadoop$ cd
+hduser@yash:~$ cp /usr/local/hadoop/etc/hadoop/mapred-site.xml.template /usr/local/hadoop/etc/hadoop/mapred-site.xml
+
+
+
+hduser@yash:~$ cd /usr/local/hadoop/etc/hadoop
+
+hduser@yash:/usr/local/hadoop/etc/hadoop$ sudo nano /usr/local/hadoop/etc/hadoop/mapred-site.xml
+[sudo] password for hduser: 
+
+/*
+We need to enter the following content in between the <configuration></configuration> tag:
+sudo nano /usr/local/hadoop/etc/hadoop/mapred-site.xml
+<configuration>
+<property>
+<name>mapred.job.tracker</name>
+<value>localhost:54311</value>
+<description>The host and port that the MapReduce job tracker runs
+at. If "local", then jobs are run in-process as a single map
+and reduce task.
+</description>
+</property>
+</configuration>
+*/
+
+
+
+hduser@yash:/usr/local/hadoop/etc/hadoop$ sudo mkdir -p /usr/local/hadoop_store/hdfs/namenode
+hduser@yash:/usr/local/hadoop/etc/hadoop$ sudo mkdir -p /usr/local/hadoop_store/hdfs/datanode
+hduser@yash:/usr/local/hadoop/etc/hadoop$ sudo chown -R hduser:hadoop /usr/local/hadoop_store
+
+hduser@yash:/usr/local/hadoop/etc/hadoop$ sudo nano /usr/local/hadoop/etc/hadoop/hdfs-site.xml
+
+/*
+Open the file and enter the following content in between the <configuration></configuration> tag:
+
+hduser@laptop:~$ sudo nano /usr/local/hadoop/etc/hadoop/hdfs-site.xml
+<configuration>
+<property>
+<name>dfs.replication</name>
+<value>1</value>
+<description>Default block replication.
+The actual number of replications can be specified when the file is created.
+The default is used if replication is not specified in create time.
+</description>
+</property>
+<property>
+<name>dfs.block.size</name>
+<value>1048576</value>
+</property>
+<property>
+<name>dfs.namenode.name.dir</name>
+<value>file:/usr/local/hadoop_store/hdfs/namenode</value>
+</property>
+<property>
+<name>dfs.datanode.data.dir</name>
+<value>file:/usr/local/hadoop_store/hdfs/datanode</value>
+</property>
+</configuration>
+*/
+
+
+
+
+
+hduser@yash:/usr/local/hadoop/etc/hadoop$ hadoop namenode -format
+
+hduser@yash:/usr/local/hadoop/etc/hadoop$ start-dfs.sh
+hduser@yash:/usr/local/hadoop/etc/hadoop$ jps
+hduser@yash:/usr/local/hadoop/etc/hadoop$ start-yarn.sh
+hduser@yash:/usr/local/hadoop/etc/hadoop$ jps
+
+//To stop hadoop use below command:
+hduser@yash:/usr/local/hadoop/etc/hadoop$ pwd
+hduser@yash:/usr/local/hadoop/etc/hadoop$ stop-dfs.sh
+hduser@yash:/usr/local/hadoop/etc/hadoop$ stop-yarn.sh
+
+
+NameNode - http://localhost:50070/
+
