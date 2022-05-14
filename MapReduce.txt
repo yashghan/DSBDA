@@ -1,0 +1,161 @@
+hduser@yash:~$ su -hduser
+
+
+hduser@yash:~$ sudo mkdir analyzelogs
+[sudo] password for hduser: 
+hduser@yash:~$ ls
+analyzelogs  Documents  Music     Public     Videos
+Desktop      Downloads  Pictures  Templates
+
+hduser@yash:~$ sudo chmod -R 777 analyzelogs/
+
+hduser@yash:~$ cd
+
+hduser@yash:~$ ls
+analyzelogs  Documents  Music     Public     Videos
+Desktop      Downloads  Pictures  Templates
+
+hduser@yash:~$ cd ..
+hduser@yash:/home$ pwd
+/home
+
+hduser@yash:/home$ ls
+hduser  yash
+
+hduser@yash:/home$ cd
+
+hduser@yash:~$ pwd
+/home/hduser
+
+
+//Giving permissions of analyzelogs to hduser, basically hduser will own the analyzelogs files after this command and user will have to take permission of hduser to access the files under analyze logs
+
+hduser@yash:~$ sudo chown -R hduser analyzelogs/
+
+hduser@yash:~$ cd
+
+hduser@yash:~$ ls
+analyzelogs  Documents  Music     Public     Videos
+Desktop      Downloads  Pictures  Templates
+
+hduser@yash:~$ cd analyzelogs/
+hduser@yash:~/analyzelogs$ ls
+
+hduser@yash:~/analyzelogs$ cd ..
+
+//COpying all files from path of previous folder to analyze logs
+hduser@yash:~$ sudo cp /home/hduser/Downloads/count_logged_users/* ~/analyzelogs/
+
+hduser@yash:~$ cd analyzelogs/
+
+hduser@yash:~/analyzelogs$ ls
+
+access_log_short.txt               SalesCountryDriver.java   SalesMapper.java
+hadoop-mapreduce-example-file.txt  SalesCountryReducer.java
+
+/*
+Now convert the access_log_short.txt to csv 
+The steps are as folows: 
+->Start from row2
+->In separator options choose separated by
+->In other choose '-'
+-> Finally save the file in .csv format
+*/
+
+
+hduser@yash:~/analyzelogs$ ls
+access_log_short.csv               SalesCountryDriver.java
+access_log_short.txt               SalesCountryReducer.java
+hadoop-mapreduce-example-file.txt  SalesMapper.java
+
+//REad and write permissions for analyzelog folder
+hduser@yash:~/analyzelogs$ ls -ltr
+total 312
+-rw-r--r-- 1 root   root      659 May 14 15:48 SalesMapper.java
+-rw-r--r-- 1 root   root      749 May 14 15:48 SalesCountryReducer.java
+-rw-r--r-- 1 root   root     1367 May 14 15:48 SalesCountryDriver.java
+-rw-r--r-- 1 root   root      391 May 14 15:48 hadoop-mapreduce-example-file.txt
+-rw-r--r-- 1 root   root   143084 May 14 15:48 access_log_short.txt
+-rw-r--r-- 1 hduser hadoop 158551 May 14 16:06 access_log_short.csv
+
+hduser@yash:~/analyzelogs$ ls -al
+total 320
+drwxrwxrwx  2 hduser root     4096 May 14 16:06 .
+drwxr-xr-x 17 hduser hadoop   4096 May 14 15:38 ..
+-rw-r--r--  1 hduser hadoop 158551 May 14 16:06 access_log_short.csv
+-rw-r--r--  1 root   root   143084 May 14 15:48 access_log_short.txt
+-rw-r--r--  1 root   root      391 May 14 15:48 hadoop-mapreduce-example-file.txt
+-rw-r--r--  1 root   root     1367 May 14 15:48 SalesCountryDriver.java
+-rw-r--r--  1 root   root      749 May 14 15:48 SalesCountryReducer.java
+-rw-r--r--  1 root   root      659 May 14 15:48 SalesMapper.java
+
+//Below command gives read permissions if it is not there
+hduser@yash:~/analyzelogs$ sudo chmod +r '.'
+[sudo] password for hduser: 
+
+hduser@yash:~/analyzelogs$ pwd
+/home/hduser/analyzelogs
+
+//Make sure to write appropriate hadoop version for below command
+hduser@yash:~/analyzelogs$ export CLASSPATH="$HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-client-core-2.10.1.jar:$HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-client-common-2.10.1.jar:$HADOOP_HOME/share/hadoop/common/hadoop-common-2.10.1.jar:~/analyzelogs
+> /SalesCountry/*:$HADOOP_HOME/lib/*"
+
+//Now we will compile all the java files
+hduser@yash:~/analyzelogs$ javac -d . SalesMapper.java SalesCountryReducer.java SalesCountryDriver.java
+
+hduser@yash:~/analyzelogs$ ls
+access_log_short.csv  hadoop-mapreduce-example-file.txt  SalesCountryDriver.java   SalesMapper.java
+access_log_short.txt  SalesCountry                       SalesCountryReducer.java
+
+hduser@yash:~/analyzelogs$ cd SalesCountry/
+hduser@yash:~/analyzelogs/SalesCountry$ ls
+SalesCountryDriver.class  SalesCountryReducer.class  SalesMapper.class
+hduser@yash:~/analyzelogs/SalesCountry$ cd ..
+
+/*
+Create the Manifest.txt file and copy the mentioned line from hadoop-mapreduce-example-file.txt into the Manifest.txt file and save
+*/
+hduser@yash:~/analyzelogs$ sudo gedit Manifest.txt
+[sudo] password for hduser: 
+
+(gedit:8862): Tepl-WARNING **: 18:13:17.938: GVfs metadata is not supported. Fallback to TeplMetadataManager. Either GVfs is not correctly installed or GVfs metadata are not supported on this platform. In the latter case, you should configure Tepl with --disable-gvfs-metadata.
+
+hduser@yash:~/analyzelogs$ jar -cfm analyzelogs.jar Manifest.txt SalesCountry/*.class
+hduser@yash:~/analyzelogs$ ls
+access_log_short.csv  analyzelogs.jar                    Manifest.txt  SalesCountryDriver.java   SalesMapper.java
+access_log_short.txt  hadoop-mapreduce-example-file.txt  SalesCountry  SalesCountryReducer.java
+
+hduser@yash:~/analyzelogs$ cd
+
+hduser@yash:~$ start-dfs.sh
+
+hduser@yash:~$ jps
+9363 DataNode
+9539 SecondaryNameNode
+9720 Jps
+9227 NameNode
+
+hduser@yash:~$ start-yarn.sh
+
+hduser@yash:~$ jps
+9363 DataNode
+9539 SecondaryNameNode
+9766 ResourceManager
+10233 Jps
+9897 NodeManager
+9227 NameNode
+
+hduser@yash:~$ cd analyzelogs/
+hduser@yash:~/analyzelogs$ sudo mkdir ~/input2000
+hduser@yash:~/analyzelogs$ ls
+access_log_short.csv  analyzelogs.jar                    Manifest.txt  SalesCountryDriver.java   SalesMapper.java
+access_log_short.txt  hadoop-mapreduce-example-file.txt  SalesCountry  SalesCountryReducer.java
+
+hduser@yash:~/analyzelogs$ pwd
+/home/hduser/analyzelogs
+
+hduser@yash:~/analyzelogs$ $HADOOP_HOME/bin/hdfs dfs -put ~/input2000 /
+
+hduser@yash:~/analyzelogs$ $HADOOP_HOME/bin/hadoop jar analyzelogs.jar /input2000 /output2000
+
+hduser@yash:~/analyzelogs$ $HADOOP_HOME/bin/hdfs dfs -cat /output2000/part-00000
