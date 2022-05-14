@@ -1,0 +1,132 @@
+hive> create database demo ;
+OK
+Time taken: 11.966 seconds
+hive> show databases;
+OK
+default
+demo
+Time taken: 0.536 seconds, Fetched: 2 row(s)
+hive> create table student(name string,rollno int,dept string)
+    > row format delimited
+    > fields terminated by ',';
+OK
+Time taken: 1.542 seconds
+
+hive> load data local inpath '/home/hduser/Desktop' into table student ;
+Loading data to table default.student
+OK
+Time taken: 2.095 seconds
+hive> use demo;
+OK
+Time taken: 0.095 seconds
+hive> create table student(name string,rollno int,dept string)
+    > row format delimited
+    > fields terminated by ',';
+OK
+Time taken: 0.263 seconds
+hive> load data local inpath '/home/hduser/Desktop' into table student ;
+Loading data to table demo.student
+OK
+Time taken: 1.539 seconds
+hive> use default;
+OK
+Time taken: 0.116 seconds
+hive> drop table student;
+OK
+Time taken: 1.462 seconds
+hive> use demo;
+OK
+Time taken: 0.09 seconds
+hive> select * from student;
+OK
+kedar khedkar	72	mech
+saurabh lohokare	34	entc
+atharva dhayagude	14	it
+pranay pawar	43	cse
+	NULL	NULL
+Time taken: 3.118 seconds, Fetched: 5 row(s)
+
+hive> load data local inpath '/home/hduser/Desktop' into table student ;
+Loading data to table demo.student
+OK
+Time taken: 0.945 seconds
+hive> drop table student_copy_1;
+OK
+Time taken: 0.122 seconds
+hive> drop table student;
+OK
+Time taken: 0.788 seconds
+hive> create table student(name string,rollno int,dept string)
+    > row format delimited
+    > fields terminated by ',';
+OK
+Time taken: 0.443 seconds
+hive> load data local inpath '/home/hduser/Desktop' into table student ;
+Loading data to table demo.student
+OK
+Time taken: 1.162 seconds
+hive> select * from student;
+OK
+kedar khedkar	72	mech
+saurabh lohokare	34	entc
+atharva dhayagude	14	it
+pranay pawar	43	cse
+	NULL	NULL
+Vishwajeet Deshmukh 54 it	NULL	NULL
+Amey Deshingkar 28 elec	NULL	NULL
+Prajesh Gawhale 17 it	NULL	NULL
+Time taken: 0.495 seconds, Fetched: 8 row(s)
+
+hive> drop table student;
+OK
+Time taken: 0.301 seconds
+hive> create table student(name string,rollno int,dept string)
+    > row format delimited
+    > fields terminated by ',';
+OK
+Time taken: 0.257 seconds
+hive> load data local inpath '/home/hduser/Desktop' into table student ;
+Loading data to table demo.student
+OK
+Time taken: 0.966 seconds
+hive> select * from student;
+OK
+kedar khedkar	72	mech
+saurabh lohokare	34	entc
+atharva dhayagude	14	it
+pranay pawar	43	cse
+	NULL	NULL
+Vishwajeet Deshmukh	54	it
+Amey Deshingkar	28	elec
+Prajesh Gawhale	17	it
+Time taken: 0.522 seconds, Fetched: 8 row(s)
+
+hive> describe student;
+OK
+name                	string              	                    
+rollno              	int                 	                    
+dept                	string              	                    
+Time taken: 0.216 seconds, Fetched: 3 row(s)
+
+
+hive> describe extended student;
+OK
+name                	string              	                    
+rollno              	int                 	                    
+dept                	string              	                    
+	 	 
+Detailed Table Information	Table(tableName:student, dbName:demo, owner:hduser, createTime:1652558369, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:name, type:string, comment:null), FieldSchema(name:rollno, type:int, comment:null), FieldSchema(name:dept, type:string, comment:null)], location:hdfs://localhost:54310/user/hive/warehouse/demo.db/student, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=,, field.delim=,}), bucketCols:[], sortCols:[], parameters:{}, skewedInfo:SkewedInfo(skewedColNames:[], skewedColValues:[], skewedColValueLocationMaps:{}), storedAsSubDirectories:false), partitionKeys:[], parameters:{transient_lastDdlTime=1652558379, totalSize=164, numRows=0, rawDataSize=0, numFiles=2}, viewOriginalText:null, viewExpandedText:null, tableType:MANAGED_TABLE, rewriteEnabled:false)	
+Time taken: 0.397 seconds, Fetched: 5 row(s)
+hive> drop table student;
+OK
+Time taken: 0.284 seconds
+
+hive> drop table student1;
+OK
+Time taken: 0.092 seconds
+
+hive> drop database demo;
+OK
+Time taken: 0.528 seconds
+
+hive> 
