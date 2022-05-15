@@ -6,7 +6,7 @@
 ##After downloading extract the file, right click on extracted folder , go to properties and copy the path
 ##Use the below command to move the folder into home of hduser
 
-sudo mv <path of while where apache-hive-2.3.9 is present> /home/hduser
+sudo mv <path of file where apache-hive-2.3.9 is present> /home/hduser
 
 ##Start hadoop using
 
