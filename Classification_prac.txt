@@ -1,0 +1,184 @@
+from google.colab import files
+uploaded = files.upload()
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+sns.set(color_codes=True)
+from scipy import stats
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict
+from sklearn import metrics
+from sklearn import datasets
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
+from sklearn.neighbors import KNeighborsClassifier
+
+import io
+import pandas as pd
+
+  
+heart = pd.read_csv(io.BytesIO(uploaded['heart.csv']),sep = ',')
+data1 = pd.DataFrame(heart)
+
+
+
+
+data1
+
+data1.info()
+
+
+data1.duplicated().sort_values()
+
+#Check duplicate rows in data
+duplicate_rows = data1[data1.duplicated()]
+print("Number of duplicate rows :: ", duplicate_rows.shape)
+
+#we have one duplicate row.
+#Removing the duplicate row
+data1 = data1.drop_duplicates()
+duplicate_rows = data1[data1.duplicated()]
+print("Number of duplicate rows :: ", duplicate_rows.shape)
+#Number of duplicate rows after dropping one duplicate row
+
+#Looking for null values
+print("Null values :: ")
+print(data1.isnull() .sum())
+
+#Check if the other data is consistent
+data1.shape
+
+#As there are no null values in data, we can proceed with the next steps.
+#Detecting Outliers
+# 1. Detecting Outliers using IQR (InterQuartile Range)
+sns.boxplot(x=data1['age'])
+#No Outliers observed in 'age'
+
+sns.boxplot(x=data1['sex'])
+#No outliers observed in sex data
+
+sns.boxplot(x=data1['cp'])
+#No outliers in 'cp'
+
+sns.boxplot(x=data1['trtbps'])
+#Some outliers are observed in 'trtbps'. They will be removed later
+
+sns.boxplot(x=data1['chol'])
+#Some outliers are observed in 'chol'. They will be removed later
+
+sns.boxplot(x=data1['fbs'])
+
+
+sns.boxplot(x=data1['restecg'])
+
+
+sns.boxplot(x=data1['thalachh'])
+#Outliers present in thalachh
+
+sns.boxplot(x=data1['exng'])
+
+
+sns.boxplot(x=data1['oldpeak'])
+#Outliers are present in 'OldPeak'
+
+
+sns.boxplot(x=data1['slp'])
+
+
+sns.boxplot(x=data1['caa'])
+#Outliers are present in 'caa'
+
+sns.boxplot(x=data1['thall'])
+
+
+#Find the InterQuartile Range
+Q1 = data1.quantile(0.25)
+Q3 = data1.quantile(0.75)
+IQR = Q3-Q1
+print('*********** InterQuartile Range ***********')
+print(IQR)
+# Remove the outliers using IQR
+data2 = data1[~((data1<(Q1-1.5*IQR))|(data1>(Q3+1.5*IQR))).any(axis=1)]
+data2.shape
+
+#Removing outliers using Z-score
+z = np.abs(stats.zscore(data1))
+data3 = data1[(z<3).all(axis=1)]
+data3.shape
+
+#Finding the correlation between variables
+pearsonCorr = data3.corr(method='pearson')
+spearmanCorr = data3.corr(method='spearman')
+fig = plt.subplots(figsize=(14,8))
+sns.heatmap(pearsonCorr, vmin=-1,vmax=1, cmap = "Blues", annot=True, linewidth=0.1)
+plt.title("Pearson Correlation")
+
+fig = plt.subplots(figsize=(14,8))
+sns.heatmap(spearmanCorr, vmin=-1,vmax=1, cmap = "Reds", annot=True, linewidth=0.1)
+plt.title("Spearman Correlation")
+
+# ***Classification***
+Before implementing any classification algorithm, we will divide our dataset into training data and test data. I have used 70% of the data for training and the remaining 30% will be used for testing.
+
+
+#From this we observe that the minimum correlation between output and other features in
+#fbs,trtbps and chol
+x = data3.drop("output", axis=1)
+y = data3["output"]
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.3)
+
+# **1. Logistic Regression Classifier**
+The code snippet used to build Logistic Regression Classifier is,
+
+#Building classification models
+names = ['Age', 'Sex', 'cp', 'trtbps', 'chol', 'fbs', 'restecg', 'thalachh', 'exng', 'oldpeak', 'slp', 'caa', 'thall']
+#   ****************Logistic Regression*****************
+logReg = LogisticRegression(random_state=0, solver='liblinear')
+logReg.fit(x_train, y_train)
+#Check accuracy of Logistic Regression
+y_pred_logReg = logReg.predict(x_test)
+#Model Accuracy
+print("Accuracy of logistic regression classifier :: " ,metrics.accuracy_score(y_test,y_pred_logReg))
+#Removing the features with low correlation and checking effect on accuracy of model
+x_train1 = x_train.drop("fbs",axis=1)
+x_train1 = x_train1.drop("trtbps", axis=1)
+x_train1 = x_train1.drop("chol", axis=1)
+x_train1 = x_train1.drop("restecg", axis=1)
+x_test1 = x_test.drop("fbs", axis=1)
+x_test1 = x_test1.drop("trtbps", axis=1)
+x_test1 = x_test1.drop("chol", axis=1)
+x_test1 = x_test1.drop("restecg", axis=1)
+logReg1 = LogisticRegression(random_state=0, solver='liblinear').fit(x_train1,y_train)
+y_pred_logReg1 = logReg1.predict(x_test1)
+print("nAccuracy of logistic regression classifier after removing features:: " ,metrics.accuracy_score(y_test,y_pred_logReg1))
+
+# **K Nearest Neighbours Classifier**
+
+Implement K nearest neighbor classifier and print the accuracy of the model.
+
+
+
+#K Neighbours Classifier
+knc =  KNeighborsClassifier()
+knc.fit(x_train,y_train)
+y_pred_knc = knc.predict(x_test)
+print("Accuracy of K-Neighbours classifier :: ", metrics.accuracy_score(y_test,y_pred_knc))
+
+# **Random Forest Classifier**
+Implement a random forest classifier using the code,
+
+
+
+# Using Random forest classifier
+rf = RandomForestClassifier(n_estimators=500)
+rf.fit(x_train,y_train)
+y_pred_rf = rf.predict(x_test)
+print("Accuracy of Random Forest Classifier :: ", metrics.accuracy_score(y_test, y_pred_rf))
+#Find the score of each feature in model and drop the features with low scores
+f_imp = rf.feature_importances_
+for i,v in enumerate(f_imp):
+    print('Feature: %s, Score: %.5f' % (names[i],v))

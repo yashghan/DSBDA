@@ -1,0 +1,196 @@
+import pandas as pd
+import io
+
+from google.colab import files
+uploaded = files.upload()
+
+dataset = pd.read_csv(io.BytesIO(uploaded['city_day.csv']), sep = ',')
+dataset
+
+dataset.columns
+
+selected_columns = ['City', 'Date', 'PM2.5', 'PM10', 'NO', 'NO2', 'NOx', 'NH3', 'CO', 'SO2', 'O3', 'Benzene', 'Toluene', 'Xylene', 'AQI', 'AQI_Bucket']
+analysis_df = dataset[selected_columns].copy()
+analysis_df
+
+analysis_df.shape
+
+analysis_df.info()
+
+analysis_df.describe
+
+analysis_df.dropna(subset = ['AQI'], inplace = True)
+analysis_df.dropna(subset = ['AQI_Bucket'], inplace = True)
+analysis_df
+
+analysis_df['Date']
+
+analysis_df['Date'] = pd.to_datetime(analysis_df['Date'])
+analysis_df
+
+analysis_df['month'] = pd.DatetimeIndex(analysis_df['Date']).month
+analysis_df
+
+analysis_df['Year'] = pd.DatetimeIndex(analysis_df['Date']).year
+analysis_df
+
+analysis_df['month_alpha'] = pd.to_datetime(analysis_df['month'], format = "%m").dt.month_name().str.slice(stop = 3)
+analysis_df
+
+analysis_df.shape
+analysis_df.info()
+
+import seaborn as sns
+import matplotlib
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+sns.set_style('darkgrid')
+matplotlib.rcParams['font.size'] = 14
+matplotlib.rcParams['figure.figsize'] = (9,5)
+matplotlib.rcParams['figure.facecolor'] = '#00000000'
+
+AQI_Bucket_Distribution = analysis_df.AQI_Bucket.value_counts()
+AQI_Bucket_Distribution
+
+plt.figure(figsize = (10,6))
+plt.title('PI CHART')
+plt.pie(AQI_Bucket_Distribution, labels = AQI_Bucket_Distribution.index, autopct='%1.1f%%', startangle = 150);
+
+sns.countplot(y=analysis_df.Year)
+plt.xticks(rotation=75);
+plt.title('Yearly-No of samples')
+plt.ylabel(None)
+
+
+selected_columns1 = ['AQI', 'month','month_alpha']
+mon_df = analysis_df[selected_columns1].copy()
+mon_df
+
+month_df = mon_df.groupby('month_alpha').mean()
+
+selected_columns2 = ['AQI', 'month']
+month_df1 = month_df[selected_columns2].copy()
+month_df1 = month_df1.sort_values(by='month', ascending=True)
+
+X1 = list(month_df1.index)
+X2 = month_df1["AQI"].tolist()
+
+
+plt.figure(figsize=(12,6))
+plt.xticks(rotation=75)
+plt.title('Avg.AQI_Monthly(2015-2020)')
+#sns.barplot(month_df.index,month_df);
+sns.barplot(x = X1,
+            y = X2,)
+ 
+# Show the plot
+plt.show()
+
+Which city is Worse and good for 2017 year?
+
+year2017 = analysis_df[analysis_df.Year == 2017]
+
+year2017
+
+plt.figure(figsize=(12, 12))
+sns.barplot(x = 'AQI',
+            y = 'City',
+           data = year2017)
+plt.title("City VS AQI(year:2017)");
+plt.xlabel('sum of AQI');
+
+**Which element is contributing more when compare to others?**
+
+Elements = ['NO', 'NO2', 'NOx', 'NH3', 'CO', 'SO2', 'O3', 'Benzene', 'Toluene', 'Xylene']
+
+Elements_whichimpacting_airquality = dataset[Elements].copy()
+Elements_whichimpacting_airquality
+
+element_df = Elements_whichimpacting_airquality.sum()
+element_df
+
+plt.figure(figsize=(12,6))
+plt.title('Distribustion of Elements which are impacting air quality')
+plt.pie(element_df, labels=element_df.index, autopct='%1.1f%%', startangle=180);
+
+**Which year is top when compared to others?**
+
+Yrs = ['Year', 'AQI']
+
+yr_df = analysis_df[Yrs].copy()
+
+z = yr_df.groupby('Year')['AQI'].mean()
+
+z
+
+Years = list(z.index)
+Years
+
+Sum_of_AQI = z.tolist()
+Sum_of_AQI
+
+plt.figure(figsize=(12,6))
+plt.title('Air Quality - Yearly view')
+plt.plot(Years, Sum_of_AQI, color='red', marker='*')
+
+**Top 10 cities for the year 2020**
+
+year2020 = analysis_df[analysis_df.Year == 2020]
+year2020.head(10)
+
+ele = ['City', 'AQI']
+
+year2020_df = year2020[ele].copy()
+year2020_df.head(5)
+
+a = {
+        'AQI' : 'sum'
+}
+b = year2020_df.groupby(['City'])
+c = b.agg(a)
+Cities_df = c.sort_values(by=['AQI'], ascending=False)
+
+Top_10_Cities = Cities_df.head(10)
+
+AQI_list = Top_10_Cities["AQI"].tolist()
+Cities = list(Top_10_Cities.index)
+
+plt.figure(figsize=(12,6))
+plt.xticks(rotation=75)
+plt.title('Air Quality - Top 10 cities for the year 2020')
+sns.barplot(Cities, AQI_list);
+
+**Which month is bad over the years?**
+
+mnths = ['Year', 'month_alpha', 'AQI']
+
+mn_df = analysis_df[mnths].copy()
+
+mn_df
+
+df2 = mn_df.groupby(['Year', 'month_alpha'])['AQI'].sum()
+df2
+
+Sum_of_AQI_list = list(df2)
+df3 = list(df2.index)
+Years_list = [i[0] for i in df3]
+months_list = [i[1] for i in df3]
+
+sub_df = pd.DataFrame(
+    {'year': Years_list,
+     'month': months_list,
+     'sum_of_AQI': Sum_of_AQI_list
+    })
+
+
+sub_df.head(13)
+
+sum_AQI = sub_df.pivot("month", "year", "sum_of_AQI")
+
+f, ax = plt.subplots(figsize=(9, 6))
+sns.heatmap(sum_AQI, annot=False, linewidths=.5, ax=ax,cmap='coolwarm')
+
+analysis_df.columns
+plt.figure(figsize = (10,10))
+sns.boxplot(data = analysis_df,y= 'NO')

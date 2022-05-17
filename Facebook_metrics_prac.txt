@@ -1,0 +1,89 @@
+# Import Dataset
+
+
+import pandas as pd
+from google.colab import files
+uploaded = files.upload()
+
+import io
+dataset = pd.read_csv(io.BytesIO(uploaded['dataset_Facebook.csv']), sep = ";")
+dataset.head()
+
+dataset['Lifetime Post Total Reach']
+
+# Create Subset
+
+dataset.columns
+
+dataset.shape
+
+dataset.info
+
+dataset.info()
+
+dataset1 = dataset[['Page total likes','Category', 'Post Month', 'Post Hour']]
+dataset1
+
+dataset2 = dataset[dataset['like'] > 200]
+dataset2
+
+dataset3 = dataset[dataset['comment'] < 45]
+dataset3
+
+
+dataset4 = dataset[dataset['Category'] > 0]
+dataset4.loc[:20]
+
+dataset5 = dataset[((dataset['comment'] > 0) & (dataset['like'] < 50))]
+dataset5
+
+dataset6 = dataset.loc[[30], ['Category']]
+dataset6
+
+ dataset7 = dataset.loc[[1,5,6,9,10]]
+ dataset7
+
+ dataset8 = dataset.loc[100:400, ['like', 'share']]
+ dataset8
+
+# dataset8 = dataset[['like' , 'share']]
+# dataset8.loc[100:400]
+
+# Sorting Data
+
+dataset.sort_values('like').head(10)
+
+dataset.sort_values(by='share', ascending=False)
+
+dataset.sort_values(by = ['like', 'share', 'comment'], ascending = False, kind = 'mergesort')
+
+subset = dataset.T
+subset
+
+dataset_new = dataset[['like','share','Category','Type']]
+dataset_new
+
+# Shaping and Reshaping Data
+
+dataset_new.shape
+
+pivot_table = pd.pivot_table(dataset_new, index = ['share', 'like'])
+pivot_table
+
+pivot_table.reset_index(inplace = True)
+pivot_table
+
+# Visualization
+
+import seaborn as sns
+
+sns.histplot(x = dataset['Category'])
+
+sns.histplot(x = dataset['like'])
+
+sns.histplot(x = dataset['comment'])
+
+# Viva Questions
+
+Difference between loc and iloc
+
